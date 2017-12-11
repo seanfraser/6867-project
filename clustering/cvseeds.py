@@ -3,6 +3,8 @@ import cv2
 import sys
 import matlab.engine
 
+from matplotlib import pyplot as plt
+import scipy.misc
 from PIL import Image
 
 def pre_process_by_L0(img_dir, img_name):
@@ -19,6 +21,22 @@ def pre_process_by_L0(img_dir, img_name):
 
     return new_img
 
+def get_average_superpixels(superpixel_dict,img,labels):
+    average_dict = {}
+    for key in superpixel_dict:
+        average_dict[key] = np.round(np.average(np.asarray([img[x,y] for (x,y) in superpixel_dict[key]]),axis = 0))
+
+    output_img = np.zeros(img.shape)
+    for x in xrange(output_img.shape[0]):
+        for y in xrange(output_img.shape[1]):
+            output_img[x,y] = average_dict[labels[x,y]]
+
+    plt.imshow(output_img, interpolation='nearest')
+    plt.show()
+
+    scipy.misc.imsave('outfile3.jpg', output_img)
+
+
 def main():
 
     seeds = None
@@ -34,9 +52,9 @@ def main():
     img_dir = '../BSR/BSDS500/data/images/test/'
     img_name = '296028.jpg'
 
-    img = cv2.imread(img_dir + img_name)
-
     new_img = pre_process_by_L0(img_dir,img_name)
+
+    img = cv2.imread(img_dir + img_name)
 
     converted_img = cv2.cvtColor(new_img, cv2.COLOR_BGR2HSV)
 
@@ -50,6 +68,14 @@ def main():
 
     # retrieve the segmentation result
     labels = seeds.getLabels()
+
+    superpixel_dict = {}
+
+    for x in xrange(labels.shape[0]):
+        for y in xrange(labels.shape[1]):
+            superpixel_dict.setdefault(labels[x,y], set()).add((x,y))
+
+    get_average_superpixels(superpixel_dict,img, labels)
 
     # labels output: use the last x bits to determine the color
     num_label_bits = 2
