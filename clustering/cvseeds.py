@@ -27,13 +27,15 @@ def get_average_superpixels(superpixel_dict,img,labels,output_dir,filename):
     for key in superpixel_dict:
         average_dict[key] = np.round(np.average(np.asarray([img[x,y] for (x,y) in superpixel_dict[key]]),axis = 0))
 
-    output_img = np.zeros(img.shape)
+    output_img = np.zeros(img.shape, dtype=np.uint8)
     for x in xrange(output_img.shape[0]):
         for y in xrange(output_img.shape[1]):
             output_img[x,y] = average_dict[labels[x,y]]
 
-    # plt.imshow(output_img, interpolation='nearest')
+    # plt.imshow(img, interpolation='nearest')
     # plt.show()
+
+    output_img = cv2.cvtColor(output_img, cv2.COLOR_BGR2RGB)
 
     scipy.misc.imsave(output_dir + filename[:-4] + '.png', output_img)
     print 'saved: ', filename[:-4] + '.png' 
@@ -77,9 +79,9 @@ def main():
     num_levels = 4
     num_histogram_bins = 5
 
-    img_dir = 'cropped_images2/'
+    img_dir = 'cropped_images/'
 
-    preprocessing = True
+    preprocessing = False
 
     output_dir = 'average_superpixels/'
 
