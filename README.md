@@ -19,5 +19,9 @@ https://pdfs.semanticscholar.org/d68b/5c22161962d78c57685e7c80c99c352ef8bb.pdf
 
 https://link.springer.com/chapter/10.1007/978-3-319-40663-3_2
 
+https://arxiv.org/pdf/1309.3848.pdf
+
+https://arxiv.org/pdf/1504.06375.pdf
+
 
 
