@@ -38,7 +38,7 @@ def get_average_superpixels(superpixel_dict,img,labels,output_dir,filename):
     scipy.misc.imsave(output_dir + filename[:-4] + '.png', output_img)
     print 'saved: ', filename[:-4] + '.png' 
 
-def display_superpixels(labels,seeds,img):
+def display_superpixels(labels,seeds,img,color_img,display_mode):
 
     # labels output: use the last x bits to determine the color
     num_label_bits = 2
@@ -77,9 +77,9 @@ def main():
     num_levels = 4
     num_histogram_bins = 5
 
-    img_dir = 'cropped_images/'
+    img_dir = 'cropped_images2/'
 
-    preprocessing = False
+    preprocessing = True
 
     output_dir = 'average_superpixels/'
 
@@ -118,7 +118,7 @@ def main():
 
             get_average_superpixels(superpixel_dict,img, labels,output_dir, file)
 
-            #display_superpixels(labels,seeds,img):
+            display_superpixels(labels,seeds,img,color_img,display_mode)
 
 
 if __name__ == '__main__':
