@@ -6,6 +6,7 @@ import matlab.engine
 from matplotlib import pyplot as plt
 import scipy.misc
 from PIL import Image
+import os
 
 def pre_process_by_L0(img_dir, img_name):
 
@@ -21,7 +22,7 @@ def pre_process_by_L0(img_dir, img_name):
 
     return new_img
 
-def get_average_superpixels(superpixel_dict,img,labels):
+def get_average_superpixels(superpixel_dict,img,labels,output_dir,filename):
     average_dict = {}
     for key in superpixel_dict:
         average_dict[key] = np.round(np.average(np.asarray([img[x,y] for (x,y) in superpixel_dict[key]]),axis = 0))
@@ -31,51 +32,13 @@ def get_average_superpixels(superpixel_dict,img,labels):
         for y in xrange(output_img.shape[1]):
             output_img[x,y] = average_dict[labels[x,y]]
 
-    plt.imshow(output_img, interpolation='nearest')
-    plt.show()
+    # plt.imshow(output_img, interpolation='nearest')
+    # plt.show()
 
-    scipy.misc.imsave('outfile3.jpg', output_img)
+    scipy.misc.imsave(output_dir + filename[:-4] + '.png', output_img)
+    print 'saved: ', filename[:-4] + '.png' 
 
-
-def main():
-
-    seeds = None
-    display_mode = 0
-
-    num_superpixels = 400
-    num_iterations = 10
-
-    prior = 2
-    num_levels = 4
-    num_histogram_bins = 5
-
-    img_dir = '../BSR/BSDS500/data/images/test/'
-    img_name = '296028.jpg'
-
-    new_img = pre_process_by_L0(img_dir,img_name)
-
-    img = cv2.imread(img_dir + img_name)
-
-    converted_img = cv2.cvtColor(new_img, cv2.COLOR_BGR2HSV)
-
-    height,width,channels = converted_img.shape
-    seeds = cv2.ximgproc.createSuperpixelSEEDS(width, height, channels,
-            num_superpixels, num_levels, prior, num_histogram_bins)
-    color_img = np.zeros((height,width,3), np.uint8)
-    color_img[:] = (0, 0, 255)
-
-    seeds.iterate(converted_img, num_iterations)
-
-    # retrieve the segmentation result
-    labels = seeds.getLabels()
-
-    superpixel_dict = {}
-
-    for x in xrange(labels.shape[0]):
-        for y in xrange(labels.shape[1]):
-            superpixel_dict.setdefault(labels[x,y], set()).add((x,y))
-
-    get_average_superpixels(superpixel_dict,img, labels)
+def display_superpixels(labels,seeds,img):
 
     # labels output: use the last x bits to determine the color
     num_label_bits = 2
@@ -100,6 +63,62 @@ def main():
 
     ch = cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+
+def main():
+
+    seeds = None
+    display_mode = 0
+
+    num_superpixels = 400
+    num_iterations = 10
+
+    prior = 2
+    num_levels = 4
+    num_histogram_bins = 5
+
+    img_dir = 'cropped_images/'
+
+    preprocessing = False
+
+    output_dir = 'average_superpixels/'
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    for file in os.listdir(img_dir):
+        if file.endswith(".jpg"):
+
+            path = (os.path.join(img_dir, file))
+            img = cv2.imread(path)
+
+            if preprocessing:
+                new_img = pre_process_by_L0(img_dir,file)
+            else:
+                new_img = img
+
+            converted_img = cv2.cvtColor(new_img, cv2.COLOR_BGR2HSV)
+
+            height,width,channels = converted_img.shape
+            seeds = cv2.ximgproc.createSuperpixelSEEDS(width, height, channels,
+                    num_superpixels, num_levels, prior, num_histogram_bins)
+            color_img = np.zeros((height,width,3), np.uint8)
+            color_img[:] = (0, 0, 255)
+
+            seeds.iterate(converted_img, num_iterations)
+
+            # retrieve the segmentation result
+            labels = seeds.getLabels()
+
+            superpixel_dict = {}
+
+            for x in xrange(labels.shape[0]):
+                for y in xrange(labels.shape[1]):
+                    superpixel_dict.setdefault(labels[x,y], set()).add((x,y))
+
+            get_average_superpixels(superpixel_dict,img, labels,output_dir, file)
+
+            #display_superpixels(labels,seeds,img):
 
 
 if __name__ == '__main__':
